@@ -25,21 +25,23 @@ ui <- fluidPage(
                      "Peptide String:"), 
          textInput("cap","Total Cap Mass: ",value=41.0265), 
          bsTooltip("cap", "Default assumes N-terminal acetyl group and C-terminal amide", placement = "top", trigger = "hover"),
-         actionButton("trunc","List LCMS Output for Truncated Side Products"), 
+         actionButton("trunc","LCMS Output for Truncated"), 
+         bsTooltip("trunc", "List LCMS Output for Truncated Side Products", placement = "bottom", trigger = "hover"), 
          textInput("mass","Assumed Peptide Mass:"), 
          textInput("tol","Tolerance: ",value=1.5), 
          bsTooltip("tol","Search for side products with masses within tolerance from assumed mass"), 
          numericInput("ignore","# Initial Amino Acids Assumed Not to Fail to Couple:",value=1,min=1), 
-         actionButton("search","Search For Mass in All Potential Side Products"), 
+         actionButton("search","Search Mass"), 
+         bsTooltip("search", "Search for assumed mass in all side products", placement = "bottom", trigger = "hover"), 
          bsTooltip("ignore", "Assumes synthesis starts from RHS of peptide", placement = "bottom", trigger = "hover"), 
          
-         h6("Additional Options [Not Yet Functional]"), 
+         h6("Additional Options"), 
          checkboxInput("adj", "Protecting Group Mass Adjustments"),
          conditionalPanel(
            condition = "input.adj == true",
-           textInput("pos", "Protecting Group Positions (Comma-Separated List)",placeholder = "e.g. 1,4,7"),
+           textInput("apos", "Protecting Group Positions (Comma-Separated List)",placeholder = "e.g. 1,4,7"),
            textInput("madj","Protecting Group Masses (Comma-Separated List) ",placeholder= "e.g. 12.1,13.2,1.8"), 
-           bsTooltip("pos", "Position 1 is first amino acid on LHS of peptide", placement = "bottom", trigger = "hover") 
+           bsTooltip("apos", "Position 1 is first amino acid on LHS of peptide", placement = "bottom", trigger = "hover") 
          )
       ),
       
@@ -61,7 +63,7 @@ server <- function(input, output,session) {
     verify  <- sum(pep.vec %in% acids)== length(pep.vec) 
     return(verify) 
   }
-   
+  
   peptide <- reactive ({ 
       validate(
         need(input$pept != "", "Error: Please input a peptide")
@@ -73,7 +75,11 @@ server <- function(input, output,session) {
     })
   
   tolerance <- reactive({
-    as.numeric(input$tol)
+    tol <- as.numeric(input$tol)
+    validate (
+      need(tol <=5, "Max value of tolerance is 5")
+    )
+    tol 
   })
   
   mass <- reactive({ 
@@ -88,15 +94,30 @@ server <- function(input, output,session) {
     as.numeric(input$cap) 
   })
   
-  # adjustment_list <- reactive ( { 
-  #   pept <- peptide()  
-  #   adjustments <- rep(0,nchar(pept)) 
-  #   adjustments 
-  # })
+  adjustments <- reactive ({ 
+    pept <- peptide() 
+    adj <- rep(0,nchar(pept)) 
+    if(input$madj!="") {
+      adj.raw = as.numeric(strsplit(input$madj,split=",")[[1]]) 
+      pos.raw = floor(as.numeric(strsplit(input$apos,split=",")[[1]])) 
+      validate(
+        need(length(adj.raw)==length(pos.raw),"Error: Position and adjustment list should be the same length") 
+      )
+      validate(
+        need(max(pos.raw)<=nchar(pept),"Error:Highest position can't be larger than the peptide length")
+      )
+      validate(
+        need(min(pos.raw)>0,"Error:First position is position 1") 
+      )
+      adj[pos.raw] = adj.raw 
+    } 
+    return(adj) 
+  })
     
-   truncTable <- eventReactive(input$trunc, {
+  truncTable <- eventReactive(input$trunc, {
      pept <- peptide() 
-     df <- listTruncated(pept)
+     adj <- adjustments() 
+     df <- listTruncated(pept,adj)
      data.frame(df) 
     }
     )
@@ -108,9 +129,7 @@ server <- function(input, output,session) {
      output$download_space <- renderUI({
        downloadButton("downloadtrunc","Download as CSV")
      })
-     
-   },
-    once=TRUE)
+   })
    
    searchTable <- eventReactive(input$search,{
      pept <- peptide() 
@@ -118,24 +137,29 @@ server <- function(input, output,session) {
      tol <- tolerance() 
      ignore <- ignore() 
      cap <- cap() 
-     df <- searchPeptides(pept,mass,tol,ignore,cap)
+     adj <- adjustments()
+     df <- searchPeptides(pept,adj,mass,tol,ignore,cap)
      data.frame(df) 
     })
    
    observeEvent(input$search, { 
-     output$tableview <- renderTable(searchTable(),
-                                     caption="Synthesis Side Products with Matching Masses",
+     output$tableview <- renderTable(head(searchTable(),100),
+                                     caption="Synthesis Side Products with Matching Masses [First 100 Shown]",
                                      caption.placement = getOption("xtable.caption.placement", "top"))
       output$download_space <- renderUI({
-       downloadButton("downloadsearch","Download as CSV") 
+       downloadButton("downloadsearch","Download all as CSV") 
       }) 
    })
    
-   # output$downloadsearch <-downloadHandler(
-   #   filename=function() { 
-   #     
-   #  }
-   # )
+   output$downloadsearch <- downloadHandler(  
+     filename = function() { 
+       paste(peptide(), "_search", ".csv", sep="")
+     }, 
+     content = function(file) { 
+       write.csv(searchTable(),file,row.names=FALSE)
+     }
+   )
+    
    output$downloadtrunc <- downloadHandler(  
       filename = function() { 
         paste(peptide(), "_truncated", ".csv", sep="")

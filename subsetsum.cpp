@@ -84,9 +84,6 @@ void findCandidatePeptides(vector<char>& orig_pep,double target_mass,vector<char
     }
     string s(side_product.begin(),side_product.end());
     matched_peptides.push_back(s); 
-    Rcout << s << "\n"; 
-    Rcout << matched_peptides; 
-    
   }
   
   if(candidate_mass < target_mass) {
@@ -105,14 +102,14 @@ void findCandidatePeptides(vector<char>& orig_pep,double target_mass,vector<char
 }
 
 //[[Rcpp::export]]
-List searchPeptides(string peptide, double mass, double tol, int ignore,double cap) { 
+List searchPeptides(string peptide, NumericVector adjustments,double mass, double tol, int ignore,double cap) { 
   matched_peptides = CharacterVector(1); 
   matched_masses = NumericVector(1); 
   tolerance = tol; 
   vector<char> pept(peptide.begin(),peptide.end());
   vector<double> arr(pept.size());
   for (int i = 0; i < (pept.size()); i++) {
-    arr[i] = AMINO_MASS[pept[i]];
+    arr[i] = AMINO_MASS[pept[i]]+adjustments[i];
   }
   findCandidatePeptides(pept,mass,pept,arr,ignore,0); 
   matched_peptides.erase(0); 
@@ -121,11 +118,11 @@ List searchPeptides(string peptide, double mass, double tol, int ignore,double c
   return(result); 
 }
 // [[Rcpp::export]]
-List listTruncated(string peptide) { 
+List listTruncated(string peptide,NumericVector adjustments) { 
   vector<char> pept(peptide.begin(),peptide.end());
   vector<double> arr(pept.size());
   for (int i = 0; i < (pept.size()); i++) {
-    arr[i] = AMINO_MASS[pept[i]];
+    arr[i] = AMINO_MASS[pept[i]]+adjustments[i];
   }
   int n_acids = pept.size()-1; 
   CharacterVector truncated(n_acids); 
