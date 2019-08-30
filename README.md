@@ -1,2 +1,1 @@
-This web application wraps a [C++ program](https://github.com/evanmunro/peptide-checker) written by the author
-so that those without C++ or command line knowledge can use the code. 
+This is the source code for a [web application](https://evanmunro.shinyapps.io/peptide-checker-app/) wraps a [C++ program](https://github.com/evanmunro/peptide-checker) written by the author for troubleshooting solid state peptide synthesis, so that those without C++ or command line knowledge can use the code. 
