@@ -103,6 +103,7 @@ void findCandidatePeptides(vector<char>& orig_pep,double target_mass,vector<char
 
 //[[Rcpp::export]]
 List searchPeptides(string peptide, NumericVector adjustments,double mass, double tol, int ignore,double cap) { 
+  cap_mass = cap; 
   matched_peptides = CharacterVector(1); 
   matched_masses = NumericVector(1); 
   tolerance = tol; 
@@ -118,7 +119,8 @@ List searchPeptides(string peptide, NumericVector adjustments,double mass, doubl
   return(result); 
 }
 // [[Rcpp::export]]
-List listTruncated(string peptide,NumericVector adjustments) { 
+List listTruncated(string peptide,NumericVector adjustments, double cap) { 
+  cap_mass = cap; 
   vector<char> pept(peptide.begin(),peptide.end());
   vector<double> arr(pept.size());
   for (int i = 0; i < (pept.size()); i++) {

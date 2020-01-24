@@ -117,7 +117,8 @@ server <- function(input, output,session) {
   truncTable <- eventReactive(input$trunc, {
      pept <- peptide() 
      adj <- adjustments() 
-     df <- listTruncated(pept,adj)
+     cap <- cap() 
+     df <- listTruncated(pept,adj,cap)
      data.frame(df) 
     }
     )
@@ -137,6 +138,7 @@ server <- function(input, output,session) {
      tol <- tolerance() 
      ignore <- ignore() 
      cap <- cap() 
+     print(cap)
      adj <- adjustments()
      df <- searchPeptides(pept,adj,mass,tol,ignore,cap)
      data.frame(df) 
