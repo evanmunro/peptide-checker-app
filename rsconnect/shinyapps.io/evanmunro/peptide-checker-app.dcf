@@ -5,8 +5,8 @@ account: evanmunro
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1128071
-bundleId: 2372451
+bundleId: 2750065
 url: https://evanmunro.shinyapps.io/peptide-checker-app/
-when: 1567204121.05354
+when: 1579828194.34421
 asMultiple: FALSE
 asStatic: FALSE
