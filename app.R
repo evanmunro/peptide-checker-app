@@ -138,7 +138,6 @@ server <- function(input, output,session) {
      tol <- tolerance() 
      ignore <- ignore() 
      cap <- cap() 
-     print(cap)
      adj <- adjustments()
      df <- searchPeptides(pept,adj,mass,tol,ignore,cap)
      data.frame(df) 
