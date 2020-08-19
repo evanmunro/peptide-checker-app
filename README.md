@@ -5,8 +5,8 @@ Unfortunately, the free version of the shinyapps.io hosting that I'm using for w
 ### Running the Peptide Mass Checker Locally 
 
 #### Requirements
-A. Make sure you have a current R installation, [instructions here](https://rstudio-education.github.io/hopr/starting.html) 
-B. Make sure you have the R package `shiny` installed. From R, it can be installed using the following command: 
+1. Make sure you have a current R installation, [instructions here](https://rstudio-education.github.io/hopr/starting.html) 
+2. Make sure you have the R package `shiny` installed. From R, it can be installed using the following command: 
 ```install.packages("shiny")```
 
 #### Running the Application. 
