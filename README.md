@@ -9,4 +9,4 @@ Unfortunately, the free version of the shinyapps.io hosting that I'm using for w
 ```install.packages("shiny")```
 3. Run the application
 
-```shiny::runGithub('peptide-checker-app', 'evanmunro')``` 
+```shiny::runGitHub('peptide-checker-app', 'evanmunro')``` 
