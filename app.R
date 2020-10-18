@@ -139,9 +139,6 @@ server <- function(input, output,session) {
      ignore <- ignore() 
      cap <- cap() 
      adj <- adjustments()
-     validate(
-       need(nchar(pept)<25, "Peptide must be less than 25 characters to search for mass")
-     )
      df <- searchPeptides(pept,adj,mass,tol,ignore,cap)
      data.frame(df) 
     })
